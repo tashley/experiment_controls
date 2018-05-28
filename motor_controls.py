@@ -16,6 +16,7 @@ class Motor(object):
             
             self.con = serial.Serial(port, 9600, timeout=0, writeTimeout=0)
             sleep(1)
+            self.read_variables()
             
             
       def close(self):
@@ -48,16 +49,28 @@ class Motor(object):
             varstrs = motor.read_output()[:-1]
             
             # process motor output
-            varnames = [varstr[:varstr.find(' ')] for varstr in varstrs]
-            varvals = [varstr[varstr.find(' ')+3:] for varstr in varstrs]
+            varlist = [[varstr[:varstr.find(' ')],
+                        varstr[varstr.find(' ')+3:]]
+                       for varstr in varstrs]
             
-            vardict = {name : val for name, val in zip(varnames, varvals)}
+            self.vardict = {name : val for name, val in varlist}
             
-            return vardict
       
       
       def reload_settings(self):
-            """ Checks to make sure motor settings are correct """
+            """ Checks to make sure initial motor settings are correct,
+                fixes errors if not. """
+            
+            with open('motor_settings.txt', 'r') as f:
+                  settingstrs = [line[:-1] for line in f.readlines()]
+            
+            setlist = [[setstr[:setstr.find(' ')], 
+                                  setstr[setstr.find(' ')+ 3 :]]
+                                 for setstr in settingstrs]
+      
+            setdict = {name : val for name, val in setlist}
+            
+            return setdict
             
 #%%
 
@@ -65,8 +78,7 @@ motor = Motor('COM3')
 #%%
 
 
-output = motor.read_variables()
-
+motor.read_variables()
 
 #%%
 motor.close()
