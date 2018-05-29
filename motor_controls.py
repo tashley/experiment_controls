@@ -1,26 +1,37 @@
+# -*- coding: utf-8 -*-
+
 """
 
 Collection of tools used to control a linear actuator powered by an Mdrive23
 stepper motor
+
+Tom Ashley
+tashley22@gmail.com
+5/29/2018
 
 """
 
 import serial
 from time import sleep
 import numpy as np
+import datetime as dt
 
 #%%
 
+
 class Motor(object):
-      def __init__(self, port):
+      def __init__(self, port, reset_coords=False):
             """ Opens motor connection and initializes motor variables """
             
             self.con = serial.Serial(port, 9600, timeout=0, writeTimeout=0)
             sleep(1)
             self.load_settings()
-            
+            self.load_xlim()
             self.maxvel = 8000
-            self.xlim = 139877
+            
+            if reset_coords==True:
+                  self.initialize_coordinates()
+            
             
       def close(self):
             """ Closes motor connection """
@@ -143,6 +154,22 @@ class Motor(object):
                   else:
                         pass
 
+      def save_xlim(self):
+            """ saves current xlim to txt file """
+            
+            date = str(dt.datetime.now())
+            textstr = '{0}\n\nas of {1}'.format(self.xlim, date)
+            
+            with open('xlim.txt', 'w') as f:
+                  f.write(textstr)
+                  
+      def load_xlim(self):
+            """ loads xlim from text file """
+            
+            with open('xlim.txt', 'r') as f:
+                  self.xlim = int(f.readlines()[0][:-1])
+                  
+
       ######################
       # Movement
       ######################
@@ -157,10 +184,10 @@ class Motor(object):
             """
             
             if switch == 0:
-                  motor.send_command('HM 3')
+                  self.send_command('HM 3')
             elif np.abs(switch) == 1:
                   command = 'SL ' + str(switch * self.maxvel)
-                  motor.send_command(command)
+                  self.send_command(command)
             else:
                   raise Exception('Must specify switch -1, 0, or 1')
       
@@ -183,60 +210,35 @@ class Motor(object):
             self.wait()
             self.send_command('MR -{}'.format(self.maxvel))
             self.xlim = int(self.read_variable('P'))
+            self.save_xlim()
             
-      def to_origin(self, reverse=False):
-            """ Sends cart to origin unlese reverse == false, 
-            in which case cart is sent to xlim """
-            self.set_variable('VM', str(self.maxvel))
+      def move(self, direction, speed):
+            """ Sends cart to coordinate extent 
+                
+                Direction:
+                    1: forward (to xlim)
+                    0: backward (to origin)
+                
+                Speed:
+                    8000 = 10 cm/s
             
-            if reverse == True:
-                  origin = self.xlim
-            elif reverse == False:
-                  origin = 0
+            """
             
-            self.send_command('MA {}'.format(origin))
+            self.set_variable('VM', str(speed))
             
+            if direction == 1:
+                  target = self.xlim
+            elif direction == 0:
+                  target = 0
+            
+            self.send_command('MA {}'.format(target))            
             self.wait()
-            
       
-      def scan(self, reverse=True, scanvel=2000, retvel=8000):
-            """ Performs single scan at velocity = scanvel then returns to 
-            appropriate origin in anticipation of another scan.
-            Assumes position is already at correct origin."""
-            
-            self.set_variable('VM', str(scanvel))
-            
-            if reverse == True:
-                  scanext = 0
-            elif reverse == False:
-                  scanext = self.xlim
-            
-            self.send_command('MA {}'.format(scanext))
-            self.wait()
-            self.to_origin(reverse=reverse)
+      
+      
+      
       
 #%%
 
-motor = Motor('COM3')
-#%%
-motor.to_origin(reverse=False)
-motor.scan(reverse=False, scanvel=4000)
-#%%
-motor.to_origin(reverse=True)
-motor.scan(reverse=True, scanvel=4000)
+motor = Motor('COM3', reset_coords=True)
 
-#%%
-motor.close()
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      

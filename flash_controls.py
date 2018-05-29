@@ -1,7 +1,14 @@
+# -*- coding: utf-8 -*-
+
 """
 
 Collection of tools for controlling camera flash trigger using a
 Numato Labs 8 channel USB GPIO board
+
+Tom Ashley
+tashley22@gmail.com
+5/29/2018
+
 
 """
 
