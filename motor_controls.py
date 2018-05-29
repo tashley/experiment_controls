@@ -20,7 +20,7 @@ import datetime as dt
 
 
 class Motor(object):
-      def __init__(self, port, reset_coords=False):
+      def __init__(self, port):
             """ Opens motor connection and initializes motor variables """
             
             self.con = serial.Serial(port, 9600, timeout=0, writeTimeout=0)
@@ -28,9 +28,6 @@ class Motor(object):
             self.load_settings()
             self.load_xlim()
             self.maxvel = 8000
-            
-            if reset_coords==True:
-                  self.initialize_coordinates()
             
             
       def close(self):
@@ -233,12 +230,5 @@ class Motor(object):
             
             self.send_command('MA {}'.format(target))            
             self.wait()
-      
-      
-      
-      
-      
-#%%
 
-motor = Motor('COM3', reset_coords=True)
 
