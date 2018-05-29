@@ -59,7 +59,29 @@ class Motor(object):
       
       def reload_settings(self):
             """ Checks to make sure initial motor settings are correct,
-                fixes errors if not. """
+                fixes errors if not.
+
+                Important variables:
+                A: Acceleration (40000)
+                D: Deceleration (40000)
+                EE: Encoder enable (1)
+                EM: Echo mode (2)
+                ER: Error code (0)
+                HC: Holding current (5)
+                MT: Motor settling delay time (25)
+                PM: Position maintenance enable (0)
+                RC: Motor run current (90)
+                S1: Switch 1 - Limit minus (3, 0, 1)
+                S2: Switch 2 - Limit plus (2, 0, 1)
+                S3: Switch 3 - Home (1, 0, 1)
+                S7: Something about clocks (34, 0)
+                S8: Something about clocks (34, 0)
+                S13: Something about inputs (60, 0)
+                VI: Initial velocity (40)
+                VM: Maximum velocity (8000)
+
+
+                """
             
             with open('motor_settings.txt', 'r') as f:
                   settingstrs = [line[:-1] for line in f.readlines()]
@@ -70,7 +92,8 @@ class Motor(object):
       
             setdict = {name : val for name, val in setlist}
             
-            return setdict
+
+            
             
 #%%
 
