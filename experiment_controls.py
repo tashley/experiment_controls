@@ -17,7 +17,7 @@ import datetime as dt
 
 class Experiment(object):
       def __init__(self, reset_coordinates=False, scan_upstream=True,
-                   scanspeed=5, returnspeed=10,
+                   scanspeed=3, returnspeed=3,
                    startflash=True, endflash=True):
             
             """
@@ -57,6 +57,9 @@ class Experiment(object):
                   self.flash.fire()
             
             self.motor.move(self.scandir, self.scanspeed)
+            if self.motor.stalled():
+                  print('Stalled on scan at position {}'.format(
+                              self.motor.read_variable('P')))
             
             if self.endflash:
                   self.flash.fire()
@@ -67,6 +70,10 @@ class Experiment(object):
             """ Returns motor to origin at returnspeed """
             
             self.motor.move(abs(self.scandir - 1), self.returnspeed)
+            
+            if self.motor.stalled():
+                  print('Stalled on move to origin at position {}'.format(
+                              self.motor.read_variable('P')))
       
       
       def run_experiment(self, duration):
@@ -81,18 +88,23 @@ class Experiment(object):
             self.start_time = dt.datetime.now()
             self.end_time = self.start_time + dt.timedelta(0, duration)
             
+            counter = 1
             while dt.datetime.now() < self.end_time:
+                  print('Starting scan {}'.format(counter))
                   self.scan()
                   self.to_scan_origin()
+                  counter +=1
 
       def close(self):
             self.motor.close()
             self.flash.close()
 
 #%%
-experiment = Experiment()
+experiment = Experiment(reset_coordinates=False, scan_upstream=True,
+                   scanspeed=3, returnspeed=10,
+                   startflash=True, endflash=True)
 #%%
-experiment.run_experiment(120)
+experiment.run_experiment(60)
             
             
             

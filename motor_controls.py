@@ -27,7 +27,7 @@ class Motor(object):
             sleep(1)
             self.load_settings()
             self.load_xlim()
-            self.maxvel = 8000
+            self.maxvel = 4000
             
             
       def close(self):
@@ -98,7 +98,12 @@ class Motor(object):
             """ Returns most recent error code """
             
             return self.read_variable('ER')
-
+      
+      def stalled(self):
+            """ Returns stall flag """
+            result = int(self.read_variable('ST'))
+            self.set_variable('ST', '0')
+            return result
 
       ######################
       # Initialization
@@ -124,6 +129,7 @@ class Motor(object):
                 S7: Something about clocks (34, 0)
                 S8: Something about clocks (34, 0)
                 S13: Something about inputs (60, 0)
+                ST: Stall detect mode (0)
                 VI: Initial velocity (40)
                 VM: Maximum velocity (8000)
 
@@ -193,8 +199,8 @@ class Motor(object):
             
             while int(self.read_variable('MV')):
                   pass
-      
-                  
+
+            
       def initialize_coordinates(self):
             """ finds range of switches and sets zero position """
             
@@ -228,7 +234,7 @@ class Motor(object):
             elif direction == 0:
                   target = 0
             
-            self.send_command('MA {}'.format(target))            
+            self.send_command('MA {}'.format(target))
             self.wait()
 
 
